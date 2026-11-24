@@ -71,4 +71,14 @@ class Ghost {
         return;
     }
     
+    method void draw() {
+        do drawHappyGhost(y*32 + (x/16));
+        return;
+    }
+
+    method void erase() {
+        do Screen.setColor(false);
+        do Screen.draeRectangle(x, y, x +15, y + 15);
+        return;
+    }
 }
