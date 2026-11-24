@@ -10,5 +10,17 @@ class Map {
         do init();
         do draw();
         return this;
+        }
+    
+    method void dispose() {
+        do Memory.deAlloc(walls);
+        do Memory.deAlloc(this);
+        return;
     }
-}
+
+    method void setWall(int c, int r, int v) {
+        if ((c >= 0) & (c < 32) & (r >= 0) & (r < 16)){
+            let walls [r*32+c] = v;
+        }
+        return;
+    }
