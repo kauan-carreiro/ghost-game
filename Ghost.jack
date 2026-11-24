@@ -1,0 +1,22 @@
+/** Fantasma controlado pelo Jogador 1. */
+class Ghost {
+    field int x, y;
+    field int size;
+    field int memAddress;
+    field int col, row;
+    field int direction;
+    field Map map;
+
+    constructor Ghost new(Map m, int c, int r) {
+        let map = m;
+        let col = c;
+        let row = r;
+        let x = col * 16;
+        let y = row * 16;
+        let size = 16;
+        let memAdreess = 0;
+        let direction = 0;
+        do draw();
+        return this;
+    }
+}
