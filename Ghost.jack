@@ -43,4 +43,32 @@ class Ghost {
         do draw();
         return;
     }
+
+    /** Move uma celula na direcao atual; para se houver parede. */
+    method void move() {
+        var int nc, nr;
+
+        if (direction = 0) { return; }
+
+        let nc = col;
+        let nr = row;
+
+        if (direction = 1) { let nr = row - 1; } // cima
+        if (direction = 2) { let nr = row + 1; } // baixo
+        if (direction = 3) { let nc = col - 1; } // esquerda
+        if (direction = 4) { let nc = col + 1; } // direita    
+
+        if (map.canMove(nc, nr)) {
+            do erase();
+            let col = nc;
+            let row = nr;
+            let x = col * 16;
+            let y = row * 16;
+            do draw();
+        }  else {
+            let direction = 0;
+        }
+        return;
+    }
+    
 }
