@@ -1,0 +1,14 @@
+/** Mapa fixo 32x16 celulas. Cada celula tem 16x16 pixels. */
+class Map {
+    field Array walls;
+    field int cols, rows;
+
+    contructor Map new() {
+        let cols = 32;
+        let rows = 16;
+        let walls = Array.new(512);
+        do init();
+        do draw();
+        return this;
+    }
+}
