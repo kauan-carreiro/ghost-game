@@ -24,3 +24,44 @@ class Map {
         }
         return;
     }
+
+    method void init() {
+        var int i, c, r;
+
+        // Zera todo o mapa.
+        let i = 0;
+        while (i < 512) {
+            let walls[i] = 0;
+            let i = i + 1;
+        }
+
+        // Bordas.
+        let c = 0;
+        while (c < 32) {
+            do setWall(0, r, 1);
+            do setWall(31, r, 1);
+            let r = r + 1;
+        }
+
+        // Paredes internas do labirinto.
+        let r = 2;
+        while (r < 7) { do setWall(8, r, 1); let r = r + 1; }
+
+        let r = 10;
+        while (r < 14) { do setWall(8, r, 1); let r = r + 1; }
+
+        let r = 2;
+        while (r < 14) { do setWall(16, r, 1); let r = r +1; }
+
+        let c = 12;
+        while (c < 21) { do setWall(c, 7, 1); let c = c + 1; }
+
+        let c = 4;
+        while (c < 9) { do setWall(c, 11, 1); let c = c + 1; }
+
+        let c = 27;
+        while (c < 30){ do setWall(c, 11, 1); let c = c + 1; }
+
+        return;
+    }
+}
