@@ -19,4 +19,28 @@ class Ghost {
         do draw();
         return this;
     }
+
+    method void setSrection(int d) {
+        let direction = d;
+        return;
+    }
+
+    method void stop() {
+        let direction = 0;
+        return;
+    }
+
+    method int getCol() { return col; }
+    method int getRow() { return row; }
+
+    method void setPosition(int c, int r) {
+        do erase();
+        let col = c;
+        let row = r;
+        let x = col * 16;
+        let y = row * 16;
+        let direction = 0;
+        do draw();
+        return;
+    }
 }
