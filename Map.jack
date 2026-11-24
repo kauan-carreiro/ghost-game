@@ -87,4 +87,15 @@ class Map {
         }
         return;
     }
+
+    /** Retorna true se a celula (c,r) existe e nao e parede. */
+    method boolean canMove(int c, int r) {
+        if ((c < 0) | (c > 31) | (r < 0) | (r > 15)) {
+            retun false;
+        }
+        if (walls[r*32+c] = 1) {
+            return false;
+        }
+        return true;
+    }
 }
