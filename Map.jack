@@ -1,101 +1,118 @@
-/** Mapa fixo 32x16 celulas. Cada celula tem 16x16 pixels. */
+/**
+ * Mapa fixo do jogo. Tela do Jack = 512 x 256 pixels.
+ * Cada celula tem 16 x 16 pixels -> 32 colunas x 15 linhas (240 px de altura).
+ * Sobram os 16 px de baixo para os relogios (use Output.moveCursor(22, col)).
+ *
+ * '#' = parede, '.' = livre.
+ * Coordenadas sao SEMPRE em celulas: x de 0 a 31, y de 0 a 14.
+ */
 class Map {
-    field Array walls;
-    field int cols, rows;
+    static Array rows;   // rows[y] e uma String de 32 caracteres
+    static int cols, numRows, cell;
 
-    contructor Map new() {
+    function void init() {
         let cols = 32;
-        let rows = 16;
-        let walls = Array.new(512);
-        do init();
-        do draw();
-        return this;
-        }
-    
-    method void dispose() {
-        do Memory.deAlloc(walls);
-        do Memory.deAlloc(this);
+        let numRows = 15;
+        let cell = 16;
+        let rows = Array.new(15);
+        let rows[0]  = "################################";
+        let rows[1]  = "#..............#...............#";
+        let rows[2]  = "#.####.#######.#.#######.#####.#";
+        let rows[3]  = "#.#..........#.#.........#...#.#";
+        let rows[4]  = "#.#.########.#.#.#######.#.#.#.#";
+        let rows[5]  = "#.#.#........#...#.......#.#...#";
+        let rows[6]  = "#...#.######.###.#.#####.#.#.###";
+        let rows[7]  = "#.#.#.#..............#.#.#.....#";
+        let rows[8]  = "#.#.#.#.######.#.###.#.#####.#.#";
+        let rows[9]  = "#.#.#...#....#.#...#...#...#...#";
+        let rows[10] = "#.#.#####.##.#.###.###.#.#.###.#";
+        let rows[11] = "#.#.......#..#.....#.....#.....#";
+        let rows[12] = "#.#######.####.#####.#####.###.#";
+        let rows[13] = "#..............................#";
+        let rows[14] = "################################";
         return;
     }
 
-    method void setWall(int c, int r, int v) {
-        if ((c >= 0) & (c < 32) & (r >= 0) & (r < 16)){
-            let walls [r*32+c] = v;
-        }
-        return;
+    /** true se a celula (x, y) existe e nao e parede. */
+    function boolean canMove(int x, int y) {
+        var String line;
+        if (x < 0) { return false; }
+        if (y < 0) { return false; }
+        if (~(x < cols)) { return false; }
+        if (~(y < numRows)) { return false; }
+        let line = rows[y];
+        // 35 = codigo ASCII de '#'
+        return ~(line.charAt(x) = 35);
     }
 
-    method void init() {
-        var int i, c, r;
-
-        // Zera todo o mapa.
-        let i = 0;
-        while (i < 512) {
-            let walls[i] = 0;
-            let i = i + 1;
-        }
-
-        // Bordas.
-        let c = 0;
-        while (c < 32) {
-            do setWall(0, r, 1);
-            do setWall(31, r, 1);
-            let r = r + 1;
-        }
-
-        // Paredes internas do labirinto.
-        let r = 2;
-        while (r < 7) { do setWall(8, r, 1); let r = r + 1; }
-
-        let r = 10;
-        while (r < 14) { do setWall(8, r, 1); let r = r + 1; }
-
-        let r = 2;
-        while (r < 14) { do setWall(16, r, 1); let r = r +1; }
-
-        let c = 12;
-        while (c < 21) { do setWall(c, 7, 1); let c = c + 1; }
-
-        let c = 4;
-        while (c < 9) { do setWall(c, 11, 1); let c = c + 1; }
-
-        let c = 27;
-        while (c < 30){ do setWall(c, 11, 1); let c = c + 1; }
-
-        return;
-    }
-
-    method void draw() {
-        var int c, r;
-
-        // Fundo branco.
-        do Screen.setColor(false);
-        do Screen.drawRectangle(0, 0, 511, 255);
-
-        // Paredes pretas.
+    /** Desenha todas as paredes. */
+    function void draw() {
+        var int x, y;
+        var String line;
         do Screen.setColor(true);
-        let r = 0;
-        while (r < 16) {
-            let c = 0;
-            while (c < 32) {
-                if (walls[r*32+c] = 1) {
-                    do Screen.drawRectangle(c*16, r*16, c*16+15, r*16+15);
+        let y = 0;
+        while (y < numRows) {
+            let line = rows[y];
+            let x = 0;
+            while (x < cols) {
+                if (line.charAt(x) = 35) {
+                    do Map.fillCell(x, y);
                 }
-                let c = c +1;
+                let x = x + 1;
             }
-            let r = r +1;
+            let y = y + 1;
         }
         return;
     }
 
-    /** Retorna true se a celula (c,r) existe e nao e parede. */
-    method boolean canMove(int c, int r) {
-        if ((c < 0) | (c > 31) | (r < 0) | (r > 15)) {
-            retun false;
-        }
-        if (walls[r*32+c] = 1) {
-            return false;
-        }
-        return true;
+    /** Pinta a celula inteira com a cor atual. */
+    function void fillCell(int x, int y) {
+        var int px, py;
+        let px = Math.multiply(x, cell);
+        let py = Math.multiply(y, cell);
+        do Screen.drawRectangle(px, py, px + 15, py + 15);
+        return;
     }
+
+    /** Apaga uma celula livre (pinta de branco). */
+    function void clearCell(int x, int y) {
+        do Screen.setColor(false);
+        do Map.fillCell(x, y);
+        do Screen.setColor(true);
+        return;
+    }
+
+    /** Sorteia uma celula livre. Devolve y*32 + x (use cellX/cellY para ler). */
+    function int randomCell() {
+        var int x, y;
+        let x = Random.randRange(cols);
+        let y = Random.randRange(numRows);
+        while (~(Map.canMove(x, y))) {
+            let x = Random.randRange(cols);
+            let y = Random.randRange(numRows);
+        }
+        return Math.multiply(y, cols) + x;
+    }
+
+    /** Sorteia uma celula livre com distancia (Manhattan) >= minDist da celula 'from'.
+     *  Util para o fantasma nao nascer em cima da pessoa. */
+    function int randomCellAway(int from, int minDist) {
+        var int c, dx, dy;
+        let c = Map.randomCell();
+        let dx = Map.cellX(c) - Map.cellX(from);
+        let dy = Map.cellY(c) - Map.cellY(from);
+        if (dx < 0) { let dx = -dx; }
+        if (dy < 0) { let dy = -dy; }
+        while ((dx + dy) < minDist) {
+            let c = Map.randomCell();
+            let dx = Map.cellX(c) - Map.cellX(from);
+            let dy = Map.cellY(c) - Map.cellY(from);
+            if (dx < 0) { let dx = -dx; }
+            if (dy < 0) { let dy = -dy; }
+        }
+        return c;
+    }
+
+    function int cellX(int c) { return c - Math.multiply(c / 32, 32); }
+    function int cellY(int c) { return c / 32; }
 }

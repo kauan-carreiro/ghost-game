@@ -1,0 +1,29 @@
+/**
+ * Gerador de numeros pseudoaleatorios (a OS do Jack nao tem Random).
+ * Congruencial linear: seed = (seed * 20077 + 12345) mod 32768.
+ */
+class Random {
+    static int seed;
+
+    /** Define a semente. Chame uma vez, com um valor que varie a cada
+     *  execucao (ex.: contador de quanto tempo o jogador demorou a apertar uma tecla). */
+    function void setSeed(int s) {
+        let seed = s;
+        return;
+    }
+
+    /** Proximo numero entre 0 e 4095. */
+    function int rand() {
+        let seed = (Math.multiply(seed, 20077) + 12345) & 32767;
+        // usa os bits altos, que sao "mais aleatorios" que os baixos
+        return seed / 8;
+    }
+
+    /** Numero aleatorio entre 0 e max-1 (max > 0). */
+    function int randRange(int max) {
+        var int r;
+        let r = Random.rand();
+        // Jack nao tem operador de resto: r mod max = r - (r/max)*max
+        return r - (Math.multiply(r / max, max));
+    }
+}
