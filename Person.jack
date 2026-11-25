@@ -114,4 +114,14 @@ method void showameOver(int w) {
     do Output.printScring("     ");
     return;
 }
+
+/** Durante os 3 segundos iniciais, apenas a pessoa se movimenta. */
+method void handlePrepKeys(char key) {
+   if (key = 119) { do person.setDirection(1); } // w
+   if (key = 115) { do person.setDirection(2); } // s
+   if (key = 97)  { do person.setDirection(3); } // a
+   if (key = 100) { do person.setDirection(4); } // d
+   if (key = 101) { do person.stop(); }          // e
+   return;
+}
 }
