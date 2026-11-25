@@ -1,0 +1,36 @@
+/**
+ * Regras do jogo:
+ * - Fase 0: 3 segundos iniciais. A pessoa pode fugir; o fantasma nao move.
+ * - Fase 1: 7 segundos de caca. Os dois se movem.
+ * - Fase 2: Game Over. Reinicia automaticamente apos 3 segundos.
+ * - ESC encerra o jogo.
+ */
+class GhostGame {
+   field int phase;
+   field int prepTime;
+   field int chaseTime;
+   field int tick;
+   field int gameOverTicks;
+   field int winner;
+   field Random random;
+   field Map map;
+   field Ghost ghost;
+   field Person person;
+
+   constructor GhostGame new() {
+      let map = Map.new();
+      let random = Random.new(19);
+      let ghost = Ghost.new(map, 1, 1);
+      let person = Person.new(map, 2, 2);
+
+      let phase = 0;
+      let prepTime = 3;
+      let chaseTime = 7;
+      let tick = 0;
+      let gameOverTicks = 0;
+      let winner = 0;
+
+      do reset();
+      return this;
+   }
+}
