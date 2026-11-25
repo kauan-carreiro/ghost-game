@@ -33,4 +33,13 @@ class GhostGame {
       do reset();
       return this;
    }
+
+   method void dispose() {
+    do ghost.dispose();
+    do person.dispose();
+    do map.dispose();
+    do random.dispose();
+    do Memory.deAlloc(this);
+    return;
+   }
 }
