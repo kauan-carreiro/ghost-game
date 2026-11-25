@@ -181,4 +181,44 @@ method void checkCollision() {
     }
     return;
 }
+
+method void run() {
+   var char key;
+   var boolean exit;
+
+   let exit = false;
+
+   while (~exit) {
+      let key = Keyboard.keyPressed();
+
+      // ESC encerra o jogo.
+      if (key = 140) { let exit = true; }
+
+      if (~exit) {
+         if (phase = 0) {
+            do handlePrepKeys(key);
+            do person.move();
+            do updateTimers();
+         }
+
+         if (phase = 1) {
+            do handleKeys(key);
+            do ghost.move();
+            do person.move();
+            do checkCollision();
+            do updateTimers();
+         }
+
+         if (phase = 2) {
+            let gameOverTicks = gameOverTicks + 1;
+            if (gameOverTicks > 30) {
+               do reset();
+            }
+         }
+      }
+
+      do Sys.wait(100);
+   }
+   return;
+}
 }
