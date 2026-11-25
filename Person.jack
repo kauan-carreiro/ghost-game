@@ -87,4 +87,31 @@ method void placePlayers() {
    do person.setPosition(pc, pr);
    return;
 }
+
+method void drawStatus() {
+    do Output.moveCursor(0, 0);
+    do Output.printString("Fuga: ");
+    do Output.printInt(prepTime);
+    do Output.printString(" ");
+
+    do Output.moveCursor(0, 20);
+    do Output.printString("Caca: ");
+    do Output.printInt(chaseTime);
+    do Output.printString(" ");
+    return;
+}
+
+method void showameOver(int w) {
+    do Output.moveCursor(10, 8);
+
+    if (w = 1) {
+        do Output.printString("Game Over - Jogador 2 perdeu");
+    }
+    if (w = 2) {
+        do Output.printString("Game Over - Jogador 1 perdeu");
+    }
+
+    do Output.printScring("     ");
+    return;
+}
 }
