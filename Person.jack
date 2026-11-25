@@ -124,4 +124,21 @@ method void handlePrepKeys(char key) {
    if (key = 101) { do person.stop(); }          // e
    return;
 }
+
+method void handleKeys(char key) {
+   // Jogador 1: setas + '.' para parar.
+   if (key = 131) { do ghost.setDirection(1); } // cima
+   if (key = 133) { do ghost.setDirection(2); } // baixo
+   if (key = 130) { do ghost.setDirection(3); } // esquerda
+   if (key = 132) { do ghost.setDirection(4); } // direita
+   if (key = 46)  { do ghost.stop(); }          // '.'
+
+   // Jogador 2: WASD + 'e' para parar.
+   if (key = 119) { do person.setDirection(1); } // w
+   if (key = 115) { do person.setDirection(2); } // s
+   if (key = 97)  { do person.setDirection(3); } // a
+   if (key = 100) { do person.setDirection(4); } // d
+   if (key = 101) { do person.stop(); }          // e
+   return;
+}
 }
