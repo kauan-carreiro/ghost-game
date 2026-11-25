@@ -1,77 +1,111 @@
-/**
- * Fantasma (J1). Anda de celula em celula na direcao escolhida
- * ate bater numa parede; direcao 0 = parado.
- *
- * Direcoes: 0 = parado, 1 = cima, 2 = baixo, 3 = esquerda, 4 = direita
- *
- * A classe Person (Pessoa B) deve ter a MESMA interface:
- *   new(x, y), setDirection(d), move(), draw(), getX(), getY(), dispose()
- */
+/** Fantasma controlado pelo Jogador 1. */
 class Ghost {
-    field int x, y;   // posicao em celulas
-    field int dir;
+    field int x, y;
+    field int size;
+    field int memAddress;
+    field int col, row;
+    field int direction;
+    field Map map;
 
-    constructor Ghost new(int startX, int startY) {
-        let x = startX;
-        let y = startY;
-        let dir = 0;
+    constructor Ghost new(Map m, int c, int r) {
+        let map = m;
+        let col = c;
+        let row = r;
+        let x = col * 16;
+        let y = row * 16;
+        let size = 16;
+        let memAdreess = 0;
+        let direction = 0;
         do draw();
         return this;
     }
 
-    method void dispose() {
-        do Memory.deAlloc(this);
+    method void setSrection(int d) {
+        let direction = d;
         return;
     }
 
-    method int getX() { return x; }
-    method int getY() { return y; }
-    method int getDirection() { return dir; }
-
-    /** d: 0 parado, 1 cima, 2 baixo, 3 esquerda, 4 direita. */
-    method void setDirection(int d) {
-        let dir = d;
+    method void stop() {
+        let direction = 0;
         return;
     }
 
-    /** Avanca UMA celula na direcao atual. Se a proxima celula for parede, para. */
+    method int getCol() { return col; }
+    method int getRow() { return row; }
+
+    method void setPosition(int c, int r) {
+        do erase();
+        let col = c;
+        let row = r;
+        let x = col * 16;
+        let y = row * 16;
+        let direction = 0;
+        do draw();
+        return;
+    }
+
+    /** Move uma celula na direcao atual; para se houver parede. */
     method void move() {
-        var int nx, ny;
-        if (dir = 0) { return; }
-        let nx = x;
-        let ny = y;
-        if (dir = 1) { let ny = y - 1; }
-        if (dir = 2) { let ny = y + 1; }
-        if (dir = 3) { let nx = x - 1; }
-        if (dir = 4) { let nx = x + 1; }
+        var int nc, nr;
 
-        if (Map.canMove(nx, ny)) {
+        if (direction = 0) { return; }
+
+        let nc = col;
+        let nr = row;
+
+        if (direction = 1) { let nr = row - 1; } // cima
+        if (direction = 2) { let nr = row + 1; } // baixo
+        if (direction = 3) { let nc = col - 1; } // esquerda
+        if (direction = 4) { let nc = col + 1; } // direita    
+
+        if (map.canMove(nc, nr)) {
             do erase();
-            let x = nx;
-            let y = ny;
+            let col = nc;
+            let row = nr;
+            let x = col * 16;
+            let y = row * 16;
             do draw();
-        } else {
-            let dir = 0;   // bateu na parede: para
+        }  else {
+            let direction = 0;
         }
         return;
     }
-
-    /** Desenha: corpo preto com dois olhos brancos. */
+    
     method void draw() {
-        var int px, py;
-        let px = Math.multiply(x, 16);
-        let py = Math.multiply(y, 16);
-        do Screen.setColor(true);
-        do Screen.drawRectangle(px + 2, py + 2, px + 13, py + 13);
-        do Screen.setColor(false);
-        do Screen.drawRectangle(px + 4, py + 5, px + 6, py + 8);
-        do Screen.drawRectangle(px + 9, py + 5, px + 11, py + 8);
-        do Screen.setColor(true);
+        do drawHappyGhost(y*32 + (x/16));
         return;
     }
 
     method void erase() {
-        do Map.clearCell(x, y);
+        do Screen.setColor(false);
+        do Screen.draeRectangle(x, y, x +15, y + 15);
         return;
     }
+
+    method void drawHappyGhost(int location) {
+        let memAddress = 16384 + location;
+
+        do Memory.poke(memAddress+0, 8184);
+        do Memory.poke(memAddress+32, 16380);
+        do Memory.poke(memAddress+64, 25542);
+        do Memory.poke(memAddress+96, -1);
+        do Memory.poke(memAddress+128, -2065);
+        do Memory.poke(memAddress+160, -7225);
+        do Memory.poke(memAddress+192, -7225);
+        do Memory.poke(memAddress+224, -2065);
+        do Memory.poke(memAddress+256, -1);
+        do Memory.poke(memAddress+288, -1);
+        do Memory.poke(memAddress+320, -1);
+        do Memory.poke(memAddress+352, -4081);
+        do Memory.poke(memAddress+384, -2017);
+        do Memory.poke(memAddress+416, -961);
+        do Memory.poke(memAddress+448, -1);
+        do Memory.poke(memAddress+480, -1);
+        return;
+        }
+
+        method void dispose(){
+            do Memory.deAlloc(this);
+            return;
+        }
 }
