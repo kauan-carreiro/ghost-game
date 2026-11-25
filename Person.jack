@@ -141,4 +141,34 @@ method void handleKeys(char key) {
    if (key = 101) { do person.stop(); }          // e
    return;
 }
+
+method void updateTimers() {
+    let tick = tick + 1;
+
+    i (tick >= 10) {
+        let tick = 0;
+
+        if (phase = 0) {
+            let prepTime = prepTime - 1;
+            if (prepTime <= 0) {
+                let phase = 1;
+                let chaseTime = 7;
+            }
+            do drawStatus();
+            return;
+        }
+
+        if (phase = 1) {
+            let chaseTime = chaseTime - 1;
+            if (chaseTime <= 0) {
+                let winner = 2;
+                let phase = 2;
+                let gameOverTicks = 0;
+                do showGameOver(winner);
+            }
+            do drawStatus();
+        }
+    }
+    return;
+}
 }
