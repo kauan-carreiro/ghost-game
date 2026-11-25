@@ -171,4 +171,14 @@ method void updateTimers() {
     }
     return;
 }
+
+method void checkCollision() {
+    if ((ghost.getCol() = person.getCol()) & (ghost.getRow() = person.getRow())) {
+        let winner = 1;
+        let phase = 2;
+        let gameOverTicks = 0;
+        do showGameOver(winner);
+    }
+    return;
+}
 }
