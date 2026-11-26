@@ -1,7 +1,7 @@
 /**
  * Controlador principal do Ghost Multiplayer.
  * Gerencia teclas de J1 (setas + '.') e J2 (WASD + 'e'),
- * e os relogios de fuga (3s) e caca (7s).
+ * relogios de fuga (3s) e caca (7s), colisoes, Game Over e reinicio.
  */
 class GhostGame {
     field Ghost ghost;
@@ -28,6 +28,7 @@ class GhostGame {
     method void playRound() {
         var int cPerson, cGhost;
         var int key, ticks, secondsLeft;
+        var boolean roundOver, personLost;
 
         do Screen.clearScreen();
         do Map.draw();
@@ -39,9 +40,12 @@ class GhostGame {
         let person = Person.new(Map.cellX(cPerson), Map.cellY(cPerson));
         let ghost = Ghost.new(Map.cellX(cGhost), Map.cellY(cGhost));
 
+        let roundOver = false;
+        let personLost = false;
+
         // FASE 1: 3 segundos de fuga (30 ciclos de 100ms) - apenas J2 se move
         let ticks = 30;
-        while ((ticks > 0) & (~exitGame)) {
+        while ((ticks > 0) & (~roundOver) & (~exitGame)) {
             let key = Keyboard.keyPressed();
             if (key = 140) { let exitGame = true; } // ESC
 
@@ -55,13 +59,18 @@ class GhostGame {
                 do drawTimer(1, secondsLeft);
             }
 
+            if (checkCollision()) {
+                let roundOver = true;
+                let personLost = true;
+            }
+
             do Sys.wait(100);
             let ticks = ticks - 1;
         }
 
         // FASE 2: 7 segundos de caca (70 ciclos de 100ms) - ambos se movem
         let ticks = 70;
-        while ((ticks > 0) & (~exitGame)) {
+        while ((ticks > 0) & (~roundOver) & (~exitGame)) {
             let key = Keyboard.keyPressed();
             if (key = 140) { let exitGame = true; } // ESC
 
@@ -69,7 +78,18 @@ class GhostGame {
             do handlePersonInput(key);
 
             do ghost.move();
-            do person.move();
+            if (checkCollision()) {
+                let roundOver = true;
+                let personLost = true;
+            }
+
+            if (~roundOver) {
+                do person.move();
+                if (checkCollision()) {
+                    let roundOver = true;
+                    let personLost = true;
+                }
+            }
 
             if ((ticks - (Math.multiply(ticks / 10, 10))) = 0) {
                 let secondsLeft = ticks / 10;
@@ -78,6 +98,10 @@ class GhostGame {
 
             do Sys.wait(100);
             let ticks = ticks - 1;
+        }
+
+        if (~exitGame) {
+            do showGameOver(personLost);
         }
 
         do ghost.dispose();
@@ -105,6 +129,11 @@ class GhostGame {
         return;
     }
 
+    /** Verifica se o fantasma e a pessoa ocupam a mesma celula. */
+    method boolean checkCollision() {
+        return ((ghost.getX() = person.getX()) & (ghost.getY() = person.getY()));
+    }
+
     /** Exibe os relogios na linha 22. */
     method void drawTimer(int phase, int sec) {
         do Output.moveCursor(22, 0);
@@ -116,6 +145,37 @@ class GhostGame {
             do Output.printString("FUGA (J2): 0s  |  CACA (J1): ");
             do Output.printInt(sec);
             do Output.printString("s   ");
+        }
+        return;
+    }
+
+    /** Exibe mensagem de fim de jogo no centro e aguarda para reiniciar. */
+    method void showGameOver(boolean personLost) {
+        var int waitTicks, key;
+        do Screen.setColor(false);
+        do Screen.drawRectangle(110, 95, 402, 155);
+        do Screen.setColor(true);
+        do Screen.drawRectangle(112, 97, 400, 153);
+        do Screen.setColor(false);
+        do Screen.drawRectangle(114, 99, 398, 151);
+        do Screen.setColor(true);
+
+        do Output.moveCursor(10, 19);
+        if (personLost) {
+            do Output.printString("Game Over - Jogador 2 perdeu");
+        } else {
+            do Output.printString("Game Over - Jogador 1 perdeu");
+        }
+        do Output.moveCursor(12, 20);
+        do Output.printString("Reiniciando em breve...");
+
+        // Aguarda 3 segundos antes do reinicio automatico, permitindo ESC
+        let waitTicks = 30;
+        while ((waitTicks > 0) & (~exitGame)) {
+            let key = Keyboard.keyPressed();
+            if (key = 140) { let exitGame = true; }
+            do Sys.wait(100);
+            let waitTicks = waitTicks - 1;
         }
         return;
     }
