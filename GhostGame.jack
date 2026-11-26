@@ -1,6 +1,7 @@
 /**
  * Controlador principal do Ghost Multiplayer.
- * Gerencia teclas de J1 (setas + '.') e J2 (WASD + 'e').
+ * Gerencia teclas de J1 (setas + '.') e J2 (WASD + 'e'),
+ * e os relogios de fuga (3s) e caca (7s).
  */
 class GhostGame {
     field Ghost ghost;
@@ -26,7 +27,7 @@ class GhostGame {
 
     method void playRound() {
         var int cPerson, cGhost;
-        var int key;
+        var int key, ticks, secondsLeft;
 
         do Screen.clearScreen();
         do Map.draw();
@@ -38,7 +39,29 @@ class GhostGame {
         let person = Person.new(Map.cellX(cPerson), Map.cellY(cPerson));
         let ghost = Ghost.new(Map.cellX(cGhost), Map.cellY(cGhost));
 
-        while (~exitGame) {
+        // FASE 1: 3 segundos de fuga (30 ciclos de 100ms) - apenas J2 se move
+        let ticks = 30;
+        while ((ticks > 0) & (~exitGame)) {
+            let key = Keyboard.keyPressed();
+            if (key = 140) { let exitGame = true; } // ESC
+
+            do handlePersonInput(key);
+            do person.move();
+            do ghost.draw(); // Garante visibilidade
+
+            // Atualiza relogio a cada segundo (10 ticks)
+            if ((ticks - (Math.multiply(ticks / 10, 10))) = 0) {
+                let secondsLeft = ticks / 10;
+                do drawTimer(1, secondsLeft);
+            }
+
+            do Sys.wait(100);
+            let ticks = ticks - 1;
+        }
+
+        // FASE 2: 7 segundos de caca (70 ciclos de 100ms) - ambos se movem
+        let ticks = 70;
+        while ((ticks > 0) & (~exitGame)) {
             let key = Keyboard.keyPressed();
             if (key = 140) { let exitGame = true; } // ESC
 
@@ -48,7 +71,13 @@ class GhostGame {
             do ghost.move();
             do person.move();
 
+            if ((ticks - (Math.multiply(ticks / 10, 10))) = 0) {
+                let secondsLeft = ticks / 10;
+                do drawTimer(2, secondsLeft);
+            }
+
             do Sys.wait(100);
+            let ticks = ticks - 1;
         }
 
         do ghost.dispose();
@@ -73,6 +102,21 @@ class GhostGame {
         if ((key = 97)  | (key = 65)) { do person.setDirection(3); } // a / A
         if ((key = 100) | (key = 68)) { do person.setDirection(4); } // d / D
         if ((key = 101) | (key = 69)) { do person.setDirection(0); } // e / E (parar)
+        return;
+    }
+
+    /** Exibe os relogios na linha 22. */
+    method void drawTimer(int phase, int sec) {
+        do Output.moveCursor(22, 0);
+        if (phase = 1) {
+            do Output.printString("FUGA (J2): ");
+            do Output.printInt(sec);
+            do Output.printString("s  |  CACA (J1): 7s   ");
+        } else {
+            do Output.printString("FUGA (J2): 0s  |  CACA (J1): ");
+            do Output.printInt(sec);
+            do Output.printString("s   ");
+        }
         return;
     }
 }
