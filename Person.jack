@@ -1,224 +1,74 @@
 /**
- * Regras do jogo:
- * - Fase 0: 3 segundos iniciais. A pessoa pode fugir; o fantasma nao move.
- * - Fase 1: 7 segundos de caca. Os dois se movem.
- * - Fase 2: Game Over. Reinicia automaticamente apos 3 segundos.
- * - ESC encerra o jogo.
+ * Pessoa (J2). Mesma interface e logica de movimento do Ghost.
+ * Direcoes: 0 = parado, 1 = cima, 2 = baixo, 3 = esquerda, 4 = direita
  */
-class GhostGame {
-   field int phase;
-   field int prepTime;
-   field int chaseTime;
-   field int tick;
-   field int gameOverTicks;
-   field int winner;
-   field Random random;
-   field Map map;
-   field Ghost ghost;
-   field Person person;
+class Person {
+    field int x, y;
+    field int dir;
 
-   constructor GhostGame new() {
-      let map = Map.new();
-      let random = Random.new(19);
-      let ghost = Ghost.new(map, 1, 1);
-      let person = Person.new(map, 2, 2);
-
-      let phase = 0;
-      let prepTime = 3;
-      let chaseTime = 7;
-      let tick = 0;
-      let gameOverTicks = 0;
-      let winner = 0;
-
-      do reset();
-      return this;
-   }
-
-   method void dispose() {
-    do ghost.dispose();
-    do person.dispose();
-    do map.dispose();
-    do random.dispose();
-    do Memory.deAlloc(this);
-    return;
-   }
-   
-method void reset() {
-   do map.draw();
-   do placePlayers();
-
-   let phase = 0;
-   let prepTime = 3;
-   let chaseTime = 7;
-   let tick = 0;
-   let gameOverTicks = 0;
-   let winner = 0;
-
-   do drawStatus();
-   return;
-}
-
-/** Sorteia posicoes validas e diferentes para os dois jogadores. */
-method void placePlayers() {
-   var int gc, gr, pc, pr;
-   var boolean ok;
-
-   let ok = false;
-   while (~ok) {
-      let gc = random.randRange(31);
-      let gr = random.randRange(15);
-      if (map.canMove(gc, gr)) {
-         let ok = true;
-      }
-   }
-
-   let ok = false;
-   while (~ok) {
-      let pc = random.randRange(31);
-      let pr = random.randRange(15);
-      if (map.canMove(pc, pr)) {
-         if (~((pc = gc) & (pr = gr))) {
-            let ok = true;
-         }
-      }
-   }
-
-   do ghost.setPosition(gc, gr);
-   do person.setPosition(pc, pr);
-   return;
-}
-
-method void drawStatus() {
-    do Output.moveCursor(0, 0);
-    do Output.printString("Fuga: ");
-    do Output.printInt(prepTime);
-    do Output.printString(" ");
-
-    do Output.moveCursor(0, 20);
-    do Output.printString("Caca: ");
-    do Output.printInt(chaseTime);
-    do Output.printString(" ");
-    return;
-}
-
-method void showameOver(int w) {
-    do Output.moveCursor(10, 8);
-
-    if (w = 1) {
-        do Output.printString("Game Over - Jogador 2 perdeu");
-    }
-    if (w = 2) {
-        do Output.printString("Game Over - Jogador 1 perdeu");
+    constructor Person new(int startX, int startY) {
+        let x = startX;
+        let y = startY;
+        let dir = 0;
+        do draw();
+        return this;
     }
 
-    do Output.printScring("     ");
-    return;
-}
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
 
-/** Durante os 3 segundos iniciais, apenas a pessoa se movimenta. */
-method void handlePrepKeys(char key) {
-   if (key = 119) { do person.setDirection(1); } // w
-   if (key = 115) { do person.setDirection(2); } // s
-   if (key = 97)  { do person.setDirection(3); } // a
-   if (key = 100) { do person.setDirection(4); } // d
-   if (key = 101) { do person.stop(); }          // e
-   return;
-}
+    method int getX() { return x; }
+    method int getY() { return y; }
+    method int getDirection() { return dir; }
 
-method void handleKeys(char key) {
-   // Jogador 1: setas + '.' para parar.
-   if (key = 131) { do ghost.setDirection(1); } // cima
-   if (key = 133) { do ghost.setDirection(2); } // baixo
-   if (key = 130) { do ghost.setDirection(3); } // esquerda
-   if (key = 132) { do ghost.setDirection(4); } // direita
-   if (key = 46)  { do ghost.stop(); }          // '.'
+    method void setDirection(int d) {
+        let dir = d;
+        return;
+    }
 
-   // Jogador 2: WASD + 'e' para parar.
-   if (key = 119) { do person.setDirection(1); } // w
-   if (key = 115) { do person.setDirection(2); } // s
-   if (key = 97)  { do person.setDirection(3); } // a
-   if (key = 100) { do person.setDirection(4); } // d
-   if (key = 101) { do person.stop(); }          // e
-   return;
-}
+    method void move() {
+        var int nx, ny;
+        if (dir = 0) { return; }
+        let nx = x;
+        let ny = y;
+        if (dir = 1) { let ny = y - 1; }
+        if (dir = 2) { let ny = y + 1; }
+        if (dir = 3) { let nx = x - 1; }
+        if (dir = 4) { let nx = x + 1; }
 
-method void updateTimers() {
-    let tick = tick + 1;
-
-    i (tick >= 10) {
-        let tick = 0;
-
-        if (phase = 0) {
-            let prepTime = prepTime - 1;
-            if (prepTime <= 0) {
-                let phase = 1;
-                let chaseTime = 7;
-            }
-            do drawStatus();
-            return;
+        if (Map.canMove(nx, ny)) {
+            do erase();
+            let x = nx;
+            let y = ny;
+            do draw();
+        } else {
+            let dir = 0;
         }
-
-        if (phase = 1) {
-            let chaseTime = chaseTime - 1;
-            if (chaseTime <= 0) {
-                let winner = 2;
-                let phase = 2;
-                let gameOverTicks = 0;
-                do showGameOver(winner);
-            }
-            do drawStatus();
-        }
+        return;
     }
-    return;
-}
 
-method void checkCollision() {
-    if ((ghost.getCol() = person.getCol()) & (ghost.getRow() = person.getRow())) {
-        let winner = 1;
-        let phase = 2;
-        let gameOverTicks = 0;
-        do showGameOver(winner);
+    /** Desenha boneco palito: cabeca, tronco, bracos e pernas. */
+    method void draw() {
+        var int px, py;
+        let px = Math.multiply(x, 16);
+        let py = Math.multiply(y, 16);
+        do Screen.setColor(true);
+        // Cabeca
+        do Screen.drawCircle(px + 8, py + 4, 2);
+        // Tronco
+        do Screen.drawLine(px + 8, py + 7, px + 8, py + 11);
+        // Bracos
+        do Screen.drawLine(px + 4, py + 8, px + 12, py + 8);
+        // Pernas
+        do Screen.drawLine(px + 8, py + 11, px + 5, py + 14);
+        do Screen.drawLine(px + 8, py + 11, px + 11, py + 14);
+        return;
     }
-    return;
-}
 
-method void run() {
-   var char key;
-   var boolean exit;
-
-   let exit = false;
-
-   while (~exit) {
-      let key = Keyboard.keyPressed();
-
-      // ESC encerra o jogo.
-      if (key = 140) { let exit = true; }
-
-      if (~exit) {
-         if (phase = 0) {
-            do handlePrepKeys(key);
-            do person.move();
-            do updateTimers();
-         }
-
-         if (phase = 1) {
-            do handleKeys(key);
-            do ghost.move();
-            do person.move();
-            do checkCollision();
-            do updateTimers();
-         }
-
-         if (phase = 2) {
-            let gameOverTicks = gameOverTicks + 1;
-            if (gameOverTicks > 30) {
-               do reset();
-            }
-         }
-      }
-
-      do Sys.wait(100);
-   }
-   return;
-}
+    method void erase() {
+        do Map.clearCell(x, y);
+        return;
+    }
 }
