@@ -1,0 +1,78 @@
+/**
+ * Controlador principal do Ghost Multiplayer.
+ * Gerencia teclas de J1 (setas + '.') e J2 (WASD + 'e').
+ */
+class GhostGame {
+    field Ghost ghost;
+    field Person person;
+    field boolean exitGame;
+
+    constructor GhostGame new() {
+        let exitGame = false;
+        return this;
+    }
+
+    method void dispose() {
+        do Memory.deAlloc(this);
+        return;
+    }
+
+    method void run() {
+        while (~exitGame) {
+            do playRound();
+        }
+        return;
+    }
+
+    method void playRound() {
+        var int cPerson, cGhost;
+        var int key;
+
+        do Screen.clearScreen();
+        do Map.draw();
+
+        // Posiciona pessoa e fantasma com distancia minima de 10 celulas
+        let cPerson = Map.randomCell();
+        let cGhost = Map.randomCellAway(cPerson, 10);
+
+        let person = Person.new(Map.cellX(cPerson), Map.cellY(cPerson));
+        let ghost = Ghost.new(Map.cellX(cGhost), Map.cellY(cGhost));
+
+        while (~exitGame) {
+            let key = Keyboard.keyPressed();
+            if (key = 140) { let exitGame = true; } // ESC
+
+            do handleGhostInput(key);
+            do handlePersonInput(key);
+
+            do ghost.move();
+            do person.move();
+
+            do Sys.wait(100);
+        }
+
+        do ghost.dispose();
+        do person.dispose();
+        return;
+    }
+
+    /** Leitura das teclas do Jogador 1 (Fantasma): Setas + '.' */
+    method void handleGhostInput(int key) {
+        if (key = 131) { do ghost.setDirection(1); } // Seta cima
+        if (key = 133) { do ghost.setDirection(2); } // Seta baixo
+        if (key = 130) { do ghost.setDirection(3); } // Seta esquerda
+        if (key = 132) { do ghost.setDirection(4); } // Seta direita
+        if (key = 46)  { do ghost.setDirection(0); } // '.' (parar)
+        return;
+    }
+
+    /** Leitura das teclas do Jogador 2 (Pessoa): WASD + 'e' */
+    method void handlePersonInput(int key) {
+        if ((key = 119) | (key = 87)) { do person.setDirection(1); } // w / W
+        if ((key = 115) | (key = 83)) { do person.setDirection(2); } // s / S
+        if ((key = 97)  | (key = 65)) { do person.setDirection(3); } // a / A
+        if ((key = 100) | (key = 68)) { do person.setDirection(4); } // d / D
+        if ((key = 101) | (key = 69)) { do person.setDirection(0); } // e / E (parar)
+        return;
+    }
+}
