@@ -1,44 +1,32 @@
 /**
- * TESTE da Pessoa A: so o mapa + fantasma.
- * Quando integrar, este Main vira o GhostGame da dupla (ou chama GhostGame.run()).
- *
- * Teclas: setas ou WASD movem; '.' ou 'e' param; ESC sai.
- * (Letras: use minusculas / CapsLock desligado.)
+ * Ponto de entrada do jogo Ghost Multiplayer.
  */
 class Main {
     function void main() {
-        var Ghost ghost;
-        var int key, c, seed;
+        var GhostGame game;
+        var int seed;
 
+        do Output.moveCursor(11, 16);
         do Output.printString("Aperte uma tecla para comecar");
-        // a demora do jogador gera a semente aleatoria
+
         let seed = 0;
         while (Keyboard.keyPressed() = 0) {
             let seed = seed + 1;
         }
+
+        // Aguarda soltar a tecla para nao interferir no inicio da partida
+        while (~(Keyboard.keyPressed() = 0)) { }
+
         do Random.setSeed(seed);
-        do Screen.clearScreen();
-        do Output.moveCursor(0, 0);
-
         do Map.init();
-        do Map.draw();
 
-        let c = Map.randomCell();
-        let ghost = Ghost.new(Map.cellX(c), Map.cellY(c));
+        let game = GhostGame.new();
+        do game.run();
+        do game.dispose();
 
-        let key = 0;
-        while (~(key = 140)) {                 // 140 = ESC
-            let key = Keyboard.keyPressed();
-            if ((key = 131) | (key = 119)) { do ghost.setDirection(1); }  // seta cima  | w
-            if ((key = 133) | (key = 115)) { do ghost.setDirection(2); }  // seta baixo | s
-            if ((key = 130) | (key = 97))  { do ghost.setDirection(3); }  // seta esq   | a
-            if ((key = 132) | (key = 100)) { do ghost.setDirection(4); }  // seta dir   | d
-            if ((key = 46)  | (key = 101)) { do ghost.setDirection(0); }  // '.'        | e  (parar)
-            do ghost.move();
-            do Sys.wait(100);                  // 10 passos por segundo
-        }
-
-        do ghost.dispose();
+        do Screen.clearScreen();
+        do Output.moveCursor(11, 24);
+        do Output.printString("Jogo encerrado.");
         return;
     }
 }
